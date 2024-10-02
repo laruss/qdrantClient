@@ -25,9 +25,15 @@ class Env:
     DO_IMAGE_PATH = TEMP_DIR + 'do_image.png'
     MERGED_IMAGE_PATH = TEMP_DIR + 'merged_image.png'
 
+    FACEFUSION_PATH = env_('FACEFUSION_PATH')
+
     #   set the command to merge the face image and the DO image.
-    #   use formatting as {face_image}, {do_image} and {merged_image}
-    CLI_MERGE_FACE_COMMAND = 'echo "Merging {face_image} with {do_image} to {merged_image}!"'
+    #   use formatting as {face_image}, {do_image}, {facefusion_path}, {merged_image}
+    CLI_MERGE_FACE_COMMAND = '''
+conda activate facefusion
+cd "{facefusion_path}"
+python facefusion.py headless-run -s "{face_image}" -t "{do_image}" --processors face_swapper face_enhancer -o "{merged_image}"
+'''
 
 
 env = Env()

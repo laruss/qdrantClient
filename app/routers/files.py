@@ -1,8 +1,10 @@
 import json
 import os
 
-from fastapi import APIRouter, UploadFile, Response
+from fastapi import APIRouter, UploadFile, Response, BackgroundTasks
 from fastapi.responses import FileResponse
+
+from waiting import wait
 
 from app import files, cli
 from app.annotations import AnnotatedQdrant
@@ -47,9 +49,18 @@ async def upload_face_image(file: UploadFile) -> Response:
     return Response(status_code=204)
 
 
+async def delete_files_after_merge():
+    from asyncio import sleep
+    await sleep(5)
+    os.remove(env.MERGED_IMAGE_PATH)
+    os.remove(env.DO_IMAGE_PATH)
+    logger.info("Files removed")
+
+
 @router.get('/images/{file_name}', operation_id="getImage")
 async def get_image(
         file_name: str,
+        background_tasks: BackgroundTasks,
         merge_faces: bool = True,
 ):
     path = await files.download_from_do(
@@ -65,6 +76,7 @@ async def get_image(
 
         res = cli.run_cli_command(
             env.CLI_MERGE_FACE_COMMAND.format(
+                facefusion_path=env.FACEFUSION_PATH,
                 face_image=env.FACE_IMAGE_PATH,
                 do_image=env.DO_IMAGE_PATH,
                 merged_image=env.MERGED_IMAGE_PATH,
@@ -73,5 +85,9 @@ async def get_image(
         logger.info(res)
 
         path = env.MERGED_IMAGE_PATH
+
+    wait(lambda: os.path.exists(path), timeout_seconds=5, waiting_for="file to be created")
+
+    background_tasks.add_task(delete_files_after_merge)
 
     return FileResponse(path=path)

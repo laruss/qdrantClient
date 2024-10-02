@@ -42,6 +42,7 @@ Additionally, it supports image storage on DigitalOcean and includes an option f
    - `QDRANT_HOST`: The host address for your Qdrant instance.
    - `QDRANT_PORT`: The port number for your Qdrant instance.
    - `QDRANT_COLLECTION`: The collection name for your Qdrant instance.
+   - `FACEFUSION_PATH`: The path to the FaceFusion model.
    - `DOP_SPACE_PRIVATE_API_KEY`: The DigitalOcean Spaces private API key.
    - `DOP_SPACE_PUBLIC_ACCESS_KEY`: The DigitalOcean Spaces public access key.
    - `DOP_SPACE_NAME`: The DigitalOcean Spaces bucket name.
@@ -49,7 +50,7 @@ Additionally, it supports image storage on DigitalOcean and includes an option f
 
 6. **Run the FastAPI service:**
    ```bash
-   uvicorn app.main:app --reload
+   python -m fastapi run main.py --reload
    ```
 
 ## Usage

@@ -13,9 +13,13 @@ def run_cli_command(command: str):
     Returns:
         - str - output of the command
     """
-    process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
-    output, error = process.communicate()
+    process = subprocess.Popen(['cmd'], stdin=subprocess.PIPE)
+    output, error = process.communicate(command.encode())
+
     if error:
-        raise ApplicationError(str(error))
+        raise ApplicationError(f"Error in stderr: {error}")
+
+    if output and "error:" in output.lower():
+        raise ApplicationError(f"Error in stdout: {output}")
 
     return output
