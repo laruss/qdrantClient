@@ -88,7 +88,7 @@ async def download_from_do(do_path: str, local_path: str) -> str | None:
         - str | None; None if the file does not exist, otherwise the local path to the downloaded file
     """
     do = DigitalOcean()
-    if not do.is_file_exists(do_path):
+    if not (await do.is_file_exists(do_path)):
         return None
     await do.download_file(local_path, do_path)
 
