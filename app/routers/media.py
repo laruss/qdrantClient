@@ -69,7 +69,7 @@ async def set_next_media(
         qdrant: AnnotatedQdrant,
 ):
     # save current media to qdrant if it is described
-    if info.description:
+    if info and info.description:
         qdrant.upload_points({info.file_name: info.description})
 
     next_media = get_next_previous_media(config_, all_media, 'next')
