@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from app.annotations import AnnotatedQdrant
-from app.models import ImageDescription
+from app.models.image_description import ImageDescription
 
 router = APIRouter(
     prefix="/search",

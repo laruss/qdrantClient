@@ -1,7 +1,7 @@
 from aioboto3 import Session
 
 from env import env
-from app.logger import logger
+from app.utils.logger import logger
 
 
 class DigitalOcean:

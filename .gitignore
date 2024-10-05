@@ -163,6 +163,14 @@ cython_debug/
 # Mac stuff
 .DS_Store
 
+# Frontend build
+/frontend/build/
+/frontend/dist/
+/frontend/node_modules/
+/frontend/.pnp
+
 # Custom for this project
 /tmp/
 /qdrant_data/
+/mongo_data/
+/anthropic_prompt.txt

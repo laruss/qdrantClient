@@ -3,43 +3,19 @@ import os
 
 from fastapi import APIRouter, UploadFile, Response, BackgroundTasks
 from fastapi.responses import FileResponse
+from starlette.responses import JSONResponse
 
 from waiting import wait
 
-from app import files, cli
-from app.annotations import AnnotatedQdrant
-from app.errors import NotFoundError, BadRequestError
-from app.logger import logger
-from app.models import ImageDescription
+from app.utils import cli, files
+from app.utils.errors import NotFoundError, BadRequestError
+from app.utils.logger import logger
 from env import env
 
 router = APIRouter(
     prefix="/files",
     tags=["files"],
 )
-
-
-@router.post('/data', operation_id="uploadDataFile")
-async def upload_data_file(
-        file: UploadFile,
-        qdrant: AnnotatedQdrant,
-):
-    res = await file.read()
-    res_dict = json.loads(res)
-
-    described_dict: dict[str, ImageDescription] = {}
-
-    for key, value in res_dict.items():
-        if desc := value.get("description"):
-            described_dict[key] = ImageDescription(**desc)
-
-    qdrant.create_collection(True)
-    qdrant.upload_points(described_dict)
-
-    return {
-        "status": "ok",
-        "uploaded": len(described_dict),
-    }
 
 
 @router.post('/face', operation_id="uploadFaceImage")
@@ -57,6 +33,17 @@ async def delete_files_after_merge():
     logger.info("Files removed")
 
 
+@router.post('/test')
+async def test(file: UploadFile) -> JSONResponse:
+    return JSONResponse(
+        content={
+            "filename": file.filename,
+            "contentType": file.content_type,
+            "fileSize": file.size,
+        }
+    )
+
+
 @router.get('/images/{file_name}', operation_id="getImage")
 async def get_image(
         file_name: str,
@@ -64,7 +51,7 @@ async def get_image(
         merge_faces: bool = True,
 ):
     path = await files.download_from_do(
-        do_path=f"{env.DOP_PATH}{file_name}",
+        do_filename=file_name,
         local_path=env.DO_IMAGE_PATH,
     )
     if not path:
