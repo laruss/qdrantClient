@@ -1,6 +1,6 @@
 import subprocess
 
-from app.errors import ApplicationError
+from app.utils.errors import ApplicationError
 
 
 def run_cli_command(command: str):

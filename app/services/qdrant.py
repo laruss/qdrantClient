@@ -1,9 +1,9 @@
 from qdrant_client import QdrantClient, models
 from sentence_transformers import SentenceTransformer
 
-from app.encoder import encoder
-from app.logger import logger
-from app.models import ImageDescription
+from app.utils.encoder import encoder
+from app.utils.logger import logger
+from app.models.image_description import ImageDescription
 from env import env
 
 

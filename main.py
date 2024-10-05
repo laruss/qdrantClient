@@ -3,8 +3,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
-from app.errors import BadRequestError, NotFoundError, ApplicationError
+from app.routers.config import create_config_if_not_exists
+from app.utils import files
+from app.utils.errors import BadRequestError, NotFoundError, ApplicationError
 from app.services.qdrant import Qdrant
 from env import env
 
@@ -14,8 +17,12 @@ from app.routers import routers
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.qdrant = Qdrant()
+    await create_config_if_not_exists()
+    files.delete_all_files_in_folder(env.TEMP_DIR, exclude=[env.FACE_IMAGE_PATH])
+
     if not os.path.exists(env.TEMP_DIR):
         os.makedirs(env.TEMP_DIR)
+
     yield
 
 app = FastAPI(
@@ -27,11 +34,6 @@ app = FastAPI(
 
 for router in routers:
     app.include_router(router)
-
-
-@app.get("/")
-async def read_root():
-    return {"message": "Application is running"}
 
 
 @app.exception_handler(BadRequestError)
@@ -47,3 +49,6 @@ async def not_found_exception_handler(_, exc: NotFoundError):
 @app.exception_handler(ApplicationError)
 async def application_exception_handler(_, exc: ApplicationError):
     return JSONResponse(status_code=500, content={"message": exc.message})
+
+
+app.mount("/", StaticFiles(directory="frontend/dist", html=True), name="static")
