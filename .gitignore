@@ -174,3 +174,4 @@ cython_debug/
 /qdrant_data/
 /mongo_data/
 /anthropic_prompt.txt
+/start_fastapi.cmd
