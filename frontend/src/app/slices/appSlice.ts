@@ -71,6 +71,9 @@ export const appSlice = createSlice({
             })
             .addMatcher(api.endpoints.getCurrentMediaData.matchFulfilled, (state, { payload }) => {
                 state.currentMediaData = payload;
+            })
+            .addMatcher(api.endpoints.getDescription.matchFulfilled, (state, { payload }) => {
+                state.descriptionData = payload;
             });
     },
 });
