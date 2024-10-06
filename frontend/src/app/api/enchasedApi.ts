@@ -16,10 +16,10 @@ const api = generatedApi.enhanceEndpoints({
             providesTags: ['Description'],
         },
         setDescription: {
-            invalidatesTags: (_, error) => (error ? [] : ['Description']),
+            invalidatesTags: (_, error) => (error ? [] : ['Description', 'Config']),
         },
         describeMedia: {
-            invalidatesTags: (_, error) => (error ? [] : ['Description']),
+            invalidatesTags: (_, error) => (error ? [] : ['Description', 'Config']),
         },
         setPromptParts: {
             invalidatesTags: (_, error) => (error ? [] : ['Config']),
