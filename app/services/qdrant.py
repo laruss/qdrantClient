@@ -100,6 +100,6 @@ class Qdrant:
         """
         return self.client.search(
             collection_name=self.collection,
-            query_vector=query.get_as_vector(use_weights=True),
+            query_vector=query.get_as_vector(),
             limit=limit,
         )
