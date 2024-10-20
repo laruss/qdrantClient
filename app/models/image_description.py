@@ -1,5 +1,3 @@
-from typing import Any
-
 from pydantic import BaseModel, Field
 
 from app.utils.encoder import encoder
@@ -14,24 +12,33 @@ class ImageDescription(BaseModel):
     # hashtags are not used in the vector representation, but are used in the description
     hashtags: list[str] = Field(..., description="The hashtags of the image")
 
-    def get_as_vector(self) -> list[float]:
+    def get_as_vector(self, use_weights: bool = False) -> dict[str, list[float]] | dict[str, tuple[list[float], float]]:
         """
         Get the description as a vector
 
+        Parameters:
+            use_weights (bool): Whether to use weights
         Returns:
-            list[float]: The description as a vector
+            dict[str, float]: The description as a vector
         """
         data = self.model_dump(exclude={'hashtags'})
-        data_values = list(data.values())
+        result = {}
+        weights = self.weights()
 
-        for i, value in enumerate(data_values):
-            # if value is a list, join it into a string
+        for key, value in data.items():
             if isinstance(value, list):
-                data_values[i] = ' '.join(value)
-
-        result = []
-
-        for value in data_values:
-            result += encoder.encoder.encode(value).tolist()
+                value = ' '.join(value)
+            value_vector = encoder.encoder.encode(value).tolist()
+            result[key] = value_vector if not use_weights else (value_vector, weights[key])
 
         return result
+
+    @staticmethod
+    def weights() -> dict[str, float]:
+        return {
+            'description': 0.4,
+            'setting': 0.2,
+            'femaleDescription': 0.25,
+            'femalePromiscuity': 0.1,
+            'places': 0.05,
+        }

@@ -28,6 +28,10 @@ class Qdrant:
         self.encoder = encoder.encoder
         logger.info(f"Qdrant client created: {self.client}")
 
+    @property
+    def __vector(self):
+        return models.VectorParams(size=self.encoder.get_sentence_embedding_dimension() * 3, distance=models.Distance.COSINE)
+
     def create_collection(self, delete: bool = False):
         """
         Create a collection in Qdrant
@@ -45,10 +49,13 @@ class Qdrant:
         if not self.client.collection_exists(self.collection):
             self.client.create_collection(
                 collection_name=self.collection,
-                vectors_config=models.VectorParams(
-                    size=self.encoder.get_sentence_embedding_dimension() * 5,  # x5 because we concatenate 5 vectors
-                    distance=models.Distance.COSINE,
-                ),
+                vectors_config={
+                    'description': self.__vector,
+                    'setting': self.__vector,
+                    'femaleDescription': self.__vector,
+                    'femalePromiscuity': self.__vector,
+                    'places': self.__vector,
+                },
             )
             logger.info(f"Collection {self.collection} created")
         else:
@@ -93,6 +100,6 @@ class Qdrant:
         """
         return self.client.search(
             collection_name=self.collection,
-            query_vector=query.get_as_vector(),
+            query_vector=query.get_as_vector(use_weights=True),
             limit=limit,
         )
