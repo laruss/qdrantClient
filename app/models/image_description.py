@@ -12,7 +12,7 @@ class ImageDescription(BaseModel):
     # hashtags are not used in the vector representation, but are used in the description
     hashtags: list[str] = Field(..., description="The hashtags of the image")
 
-    def get_as_vector(self) -> dict[str, list[float]] | dict[str, tuple[list[float], float]]:
+    def get_as_vector(self) -> dict[str, list[float]]:
         """
         Get the description as a vector
 

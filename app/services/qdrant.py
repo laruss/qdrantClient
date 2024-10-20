@@ -30,7 +30,7 @@ class Qdrant:
 
     @property
     def __vector(self):
-        return models.VectorParams(size=self.encoder.get_sentence_embedding_dimension() * 3, distance=models.Distance.COSINE)
+        return models.VectorParams(size=self.encoder.get_sentence_embedding_dimension(), distance=models.Distance.COSINE)
 
     def create_collection(self, delete: bool = False):
         """
@@ -98,8 +98,30 @@ class Qdrant:
         Returns:
             - list[models.ScoredPoint] - list of similar vectors
         """
-        return self.client.search(
+        return self.client.query_points(
             collection_name=self.collection,
-            query_vector=query.get_as_vector(),
+            prefetch=[
+                models.Prefetch(
+                    query=query.get_as_vector()['description'],
+                    using='description',
+                ),
+                models.Prefetch(
+                    query=query.get_as_vector()['setting'],
+                    using='setting',
+                ),
+                models.Prefetch(
+                    query=query.get_as_vector()['femaleDescription'],
+                    using='femaleDescription',
+                ),
+                models.Prefetch(
+                    query=query.get_as_vector()['femalePromiscuity'],
+                    using='femalePromiscuity',
+                ),
+                models.Prefetch(
+                    query=query.get_as_vector()['places'],
+                    using='places',
+                ),
+            ],
+            query=models.FusionQuery(fusion=models.Fusion.DBSF),
             limit=limit,
-        )
+        ).points
