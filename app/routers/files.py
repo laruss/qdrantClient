@@ -1,9 +1,8 @@
-import json
 import os
 
 from fastapi import APIRouter, UploadFile, Response, BackgroundTasks
 from fastapi.responses import FileResponse
-from starlette.responses import JSONResponse
+from fastapi.responses import JSONResponse
 
 from waiting import wait
 

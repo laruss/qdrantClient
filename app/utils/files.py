@@ -5,7 +5,6 @@ import uuid
 import cloudscraper
 import imagehash
 from PIL import Image
-from aiohttp import ClientSession
 from fastapi import UploadFile
 
 from app.utils.errors import BadRequestError, ApplicationError
@@ -166,7 +165,7 @@ async def download_from_do(do_filename: str, local_path: str) -> str | None:
     do_path = env.DOP_PATH + do_filename
     try:
         await do.download_file(local_path=local_path, remote_path=do_path)
-    except do.client.exceptions.ClientError:
+    except Exception as e:
         return None
 
     return local_path

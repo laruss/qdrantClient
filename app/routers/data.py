@@ -40,10 +40,14 @@ class UploadImageDataPayload(BaseModel):
 async def upload_image_data(
         file: UploadFile,
         qdrant: AnnotatedQdrant,
-        uploadInQdrant: bool = True,
+        upload_in_qdrant: bool = True,
+        delete_existing: bool = False,
 ):
     json_content = json.loads(await file.read())
     payload = UploadImageDataPayload.model_validate({"data": json_content})
+    if delete_existing:
+        await ImageModel.delete_all()
+
     for file_name, data in payload.data.items():
         await ImageModel.insert_one(
             ImageValidator(
@@ -53,12 +57,12 @@ async def upload_image_data(
             )
         )
 
-    if uploadInQdrant:
+    if upload_in_qdrant:
         described_dict: dict[str, ImageDescription] = {}
         for key, value in json_content.items():
             if desc := value.get("description"):
                 described_dict[key] = ImageDescription(**desc)
-        qdrant.create_collection(True)
+        qdrant.create_collection(delete=True)
         qdrant.upload_points(described_dict)
 
     return JSONResponse(content={"message": "Successfully saved data for images."})

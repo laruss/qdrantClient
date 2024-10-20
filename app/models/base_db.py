@@ -102,3 +102,7 @@ class BaseDb(Generic[T]):
     @classmethod
     async def delete_one(cls, **query: Any) -> None:
         await cls.__mongo_collection__.delete_one(query)
+
+    @classmethod
+    async def delete_all(cls) -> None:
+        await cls.__mongo_collection__.delete_many({})
