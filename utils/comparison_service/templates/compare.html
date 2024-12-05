@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Comparison</title>
+</head>
+<body>
+    <h1>Похожие изображения</h1>
+    {% if similar_pairs %}
+        <form action="/delete" method="post">
+            {% for pair in similar_pairs %}
+                <div style="display: flex; align-items: center;">
+                    <div>
+                        <img src="/images/{{ pair.file1 }}" alt="{{ pair.file1 }}" width="200">
+                        <p>{{ pair.file1 }}</p>
+                    </div>
+                    <div>
+                        <img src="/images/{{ pair.file2 }}" alt="{{ pair.file2 }}" width="200">
+                        <p>{{ pair.file2 }}</p>
+                    </div>
+                    <p>Схожесть: {{ pair.similarity }}%</p>
+                    <div>
+                        <label>
+                            <input type="radio" name="delete_{{ loop.index }}" value="">
+                            Не удалять
+                        </label>
+                        <label>
+                            <input type="radio" name="delete_{{ loop.index }}" value="{{ pair.file1 }}">
+                            Удалить {{ pair.file1 }}
+                        </label>
+                        <label>
+                            <input type="radio" name="delete_{{ loop.index }}" value="{{ pair.file2 }}">
+                            Удалить {{ pair.file2 }}
+                        </label>
+                    </div>
+                </div>
+                <hr>
+            {% endfor %}
+            <button type="submit">Удалить выбранные</button>
+        </form>
+    {% else %}
+        <p>Нет похожих изображений.</p>
+    {% endif %}
+    <a href="/">Вернуться на главную</a>
+</body>
+</html>

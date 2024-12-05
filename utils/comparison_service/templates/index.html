@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Hashing</title>
+</head>
+<body>
+    <h1>Хеширование изображений</h1>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+    <form action="/hash" method="post">
+        <label for="folder_path">Путь к папке:</label>
+        <input type="text" id="folder_path" name="folder_path" required>
+        <button type="submit">Хешировать</button>
+    </form>
+
+    {% if json_exists %}
+    <form action="/compare" method="post">
+        <label for="similarity">Схожесть (%):</label>
+        <input type="number" id="similarity" name="similarity" min="0" max="100" value="90" required>
+        <button type="submit">Сравнить</button>
+    </form>
+    {% endif %}
+</body>
+</html>
