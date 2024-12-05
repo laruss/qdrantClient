@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Выбор каталога</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Выберите путь к каталогу с медиа</h1>
+    {% if error %}
+    <p style="color:red;">{{ error }}</p>
+    {% endif %}
+    <form id="pathForm">
+        <input type="text" id="mediaPath" name="media_path" placeholder="Введите путь к каталогу" required>
+        <button type="submit">Установить путь</button>
+    </form>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
