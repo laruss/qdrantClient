@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from waiting import wait
 
 from app.annotations import AnnotatedAllForCurrentDataType
-from app.models.image import ImageValidator
+from app.models.image import ImageValidator, ImageModel
 from app.services.digital_ocean import DigitalOcean
 from app.utils import cli, files
 from app.utils.errors import NotFoundError, BadRequestError
@@ -89,7 +89,8 @@ async def download_files(media_files: list[ImageValidator], folder: str):
 
 # Endpoint to start the download task
 @router.post("/download/start")
-async def start_download(all_data: AnnotatedAllForCurrentDataType, destination: str):
+async def start_download(destination: str):
+    all_data = await ImageModel.get_many()
     asyncio.create_task(download_files(all_data, destination))
     return {
         "message": "Task started",
