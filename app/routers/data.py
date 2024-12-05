@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from app.annotations import AnnotatedQdrant
 from app.models.image import ImageValidator, ImageModel
 from app.models.image_description import ImageDescription
+from utils.vecotizer.vecorizer import get_image_vector
 
 router = APIRouter(
     prefix="/data",
@@ -66,3 +67,15 @@ async def upload_image_data(
         qdrant.upload_points(described_dict)
 
     return JSONResponse(content={"message": "Successfully saved data for images."})
+
+
+class VectorizedResult(BaseModel):
+    url: str
+    vector: list[float]
+
+
+@router.get('/vectorize', operation_id="vectorizeImages")
+async def vectorize_images(url: str) -> VectorizedResult:
+    result = get_image_vector(url, None)
+
+    return VectorizedResult(url=url, vector=result)
