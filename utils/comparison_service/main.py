@@ -1,3 +1,6 @@
+from collections import defaultdict
+import numpy as np
+
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.templating import Jinja2Templates
@@ -61,23 +64,43 @@ async def compare_images(request: Request, similarity: int = Form(...)):
     with open(json_path, 'r') as f:
         hashes = json.load(f)
 
-    # Сравниваем хеши
+    # Преобразуем хеши в целые числа
+    hash_size = 8  # Размер хеша imagehash (8x8 по умолчанию)
+    hash_length = hash_size * hash_size  # Общее количество бит в хеше
+    hash_ints = {}
+    for filename, hash_str in hashes.items():
+        hash_bin = bin(int(hash_str, 16))[2:].zfill(hash_length)
+        hash_array = np.array([int(b) for b in hash_bin], dtype=np.uint8)
+        hash_ints[filename] = hash_array
+
+    # Устанавливаем порог расстояния Хэмминга на основе заданного процента схожести
+    max_distance = hash_length * (1 - similarity / 100)
+
+    # Создаем индекс хешей
+    hash_buckets = defaultdict(list)
+    prefix_length = 16  # Длина префикса хеша для группировки
+    for filename, hash_array in hash_ints.items():
+        # Используем первые N бит хеша в качестве ключа
+        prefix = ''.join(map(str, hash_array[:prefix_length]))
+        hash_buckets[prefix].append((filename, hash_array))
+
     similar_pairs = []
-    filenames = list(hashes.keys())
-    for i in range(len(filenames)):
-        for j in range(i+1, len(filenames)):
-            hash1 = imagehash.hex_to_hash(hashes[filenames[i]])
-            hash2 = imagehash.hex_to_hash(hashes[filenames[j]])
-            # Вычисляем процент схожести
-            difference = hash1 - hash2  # Hamming distance
-            hash_size = hash1.hash.size  # Общее количество бит в хеше
-            similarity_percentage = (1 - difference / hash_size) * 100
-            if similarity_percentage >= similarity:
-                similar_pairs.append({
-                    'file1': filenames[i],
-                    'file2': filenames[j],
-                    'similarity': round(similarity_percentage, 2)
-                })
+    # Сравниваем только внутри одной группы
+    for bucket in hash_buckets.values():
+        for i in range(len(bucket)):
+            filename1, hash1 = bucket[i]
+            for j in range(i + 1, len(bucket)):
+                filename2, hash2 = bucket[j]
+                # Вычисляем расстояние Хэмминга
+                difference = np.count_nonzero(hash1 != hash2)
+                if difference <= max_distance:
+                    similarity_percentage = (1 - difference / hash_length) * 100
+                    similar_pairs.append({
+                        'file1': filename1,
+                        'file2': filename2,
+                        'similarity': round(similarity_percentage, 2)
+                    })
+
     return templates.TemplateResponse("compare.html", {"request": request, "similar_pairs": similar_pairs})
 
 @app.post("/delete", response_class=HTMLResponse)
