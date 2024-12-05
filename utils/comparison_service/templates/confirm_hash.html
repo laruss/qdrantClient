@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Использовать существующий hashes.json?</title>
+</head>
+<body>
+    <h1>Файл hashes.json уже существует</h1>
+    <p>Вы хотите использовать существующий файл hashes.json или пересканировать изображения?</p>
+    <form action="/confirm_hash" method="post">
+        <button type="submit" name="action" value="use_existing">Использовать существующий</button>
+        <button type="submit" name="action" value="rehash">Пересканировать</button>
+    </form>
+</body>
+</html>

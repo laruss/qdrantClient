@@ -1,6 +1,3 @@
-from collections import defaultdict
-import numpy as np
-
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.templating import Jinja2Templates
@@ -8,11 +5,14 @@ import os
 import json
 from PIL import Image
 import imagehash
+import numpy as np
+from collections import defaultdict
 
 app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
 
+# Глобальная переменная для хранения пути к папке с изображениями
 image_dir = None
 
 @app.get("/", response_class=HTMLResponse)
@@ -33,6 +33,30 @@ async def hash_images(request: Request, folder_path: str = Form(...)):
         error_message = "Указанный путь не существует или не является директорией."
         return templates.TemplateResponse("index.html", {"request": request, "error": error_message, "json_exists": False})
 
+    json_path = os.path.join(image_dir, 'hashes.json')
+    if os.path.exists(json_path):
+        # Если файл существует, предлагаем пользователю выбор
+        return templates.TemplateResponse("confirm_hash.html", {"request": request})
+    else:
+        # Если файла нет, хешируем изображения
+        await perform_hashing(image_dir)
+        return RedirectResponse("/", status_code=302)
+
+@app.post("/confirm_hash", response_class=HTMLResponse)
+async def confirm_hash(request: Request, action: str = Form(...)):
+    global image_dir
+    if action == "use_existing":
+        # Используем существующий файл hashes.json
+        return RedirectResponse("/", status_code=302)
+    elif action == "rehash":
+        # Пересчитываем хеши
+        await perform_hashing(image_dir)
+        return RedirectResponse("/", status_code=302)
+    else:
+        # Неверное действие, возвращаем на главную страницу
+        return RedirectResponse("/", status_code=302)
+
+async def perform_hashing(image_dir):
     # Хешируем изображения и сохраняем в JSON-файл
     hashes = {}
     for filename in os.listdir(image_dir):
@@ -48,7 +72,6 @@ async def hash_images(request: Request, folder_path: str = Form(...)):
     json_path = os.path.join(image_dir, 'hashes.json')
     with open(json_path, 'w') as f:
         json.dump(hashes, f)
-    return RedirectResponse("/", status_code=302)
 
 @app.post("/compare", response_class=HTMLResponse)
 async def compare_images(request: Request, similarity: int = Form(...)):
@@ -64,7 +87,7 @@ async def compare_images(request: Request, similarity: int = Form(...)):
     with open(json_path, 'r') as f:
         hashes = json.load(f)
 
-    # Преобразуем хеши в целые числа
+    # Оптимизированное сравнение хешей
     hash_size = 8  # Размер хеша imagehash (8x8 по умолчанию)
     hash_length = hash_size * hash_size  # Общее количество бит в хеше
     hash_ints = {}
@@ -130,20 +153,7 @@ async def delete_images(request: Request):
             continue  # Пропускаем ошибки при удалении файлов
 
     # Пересчитываем хеши
-    hashes = {}
-    for filename in os.listdir(image_dir):
-        if filename.lower().endswith('.webp'):
-            filepath = os.path.join(image_dir, filename)
-            try:
-                with Image.open(filepath) as img:
-                    hash_value = str(imagehash.average_hash(img))
-                    hashes[filename] = hash_value
-            except Exception as e:
-                print(f"Ошибка при обработке {filename}: {e}")
-    # Сохраняем обновленные хеши в JSON-файл
-    json_path = os.path.join(image_dir, 'hashes.json')
-    with open(json_path, 'w') as f:
-        json.dump(hashes, f)
+    await perform_hashing(image_dir)
 
     return RedirectResponse("/", status_code=302)
 
