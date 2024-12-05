@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 from fastapi import APIRouter, UploadFile
 from fastapi.responses import JSONResponse
@@ -71,11 +72,13 @@ async def upload_image_data(
 
 class VectorizedResult(BaseModel):
     url: str
-    vector: list[float]
+    vector: list[Any]
 
 
 @router.get('/vectorize', operation_id="vectorizeImages")
 async def vectorize_images(url: str) -> VectorizedResult:
     result = get_image_vector(url, None)
+    # ndarray to list
+    result = result.tolist()
 
     return VectorizedResult(url=url, vector=result)

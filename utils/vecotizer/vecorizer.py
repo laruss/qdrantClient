@@ -1,3 +1,4 @@
+import numpy
 import torch
 import clip
 from PIL import Image
@@ -21,7 +22,7 @@ WARN: This module requires the following packages:
 """
 
 
-def get_image_vector(image_url: str | None, image_path: str | None) -> list[float]:
+def get_image_vector(image_url: str | None, image_path: str | None) -> numpy.ndarray:
     """
     Get image vector from URL or path
     Parameters:
