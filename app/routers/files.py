@@ -1,4 +1,6 @@
+import asyncio
 import os
+from threading import Lock
 
 from fastapi import APIRouter, UploadFile, Response, BackgroundTasks
 from fastapi.responses import FileResponse
@@ -6,6 +8,9 @@ from fastapi.responses import JSONResponse
 
 from waiting import wait
 
+from app.annotations import AnnotatedAllForCurrentDataType
+from app.models.image import ImageValidator
+from app.services.digital_ocean import DigitalOcean
 from app.utils import cli, files
 from app.utils.errors import NotFoundError, BadRequestError
 from app.utils.logger import logger
@@ -41,6 +46,65 @@ async def test(file: UploadFile) -> JSONResponse:
             "fileSize": file.size,
         }
     )
+
+task_status = {
+    'status': '',
+    'total_files': 0,
+    'downloaded_files': 0,
+    'percentage': 0
+}
+
+# Background task for downloading files
+async def download_files(media_files: list[ImageValidator], folder: str):
+    semaphore = asyncio.Semaphore(8)
+
+    async def sem_download(url: str):
+        async with semaphore:
+            save_path = f"{folder}/{url.split('/')[-1]}"  # Simplified save path
+            result = await files.download_from_do(
+                do_filename=url,
+                local_path=save_path
+            )
+            if not result:
+                logger.error(f"Error downloading file {url}")
+                return
+            else:
+                logger.info(f"File {url} downloaded successfully")
+
+            task_status['downloaded_files'] += 1
+            task_status['percentage'] = int(
+                (task_status['downloaded_files'] / task_status['total_files']) * 100
+            )
+
+    task_status['status'] = 'pending'
+    task_status['total_files'] = len(media_files)
+    task_status['downloaded_files'] = 0
+    task_status['percentage'] = 0
+
+    tasks = [asyncio.create_task(sem_download(f.file_name)) for f in media_files]
+    await asyncio.gather(*tasks)
+
+    task_status['status'] = 'done'
+
+
+# Endpoint to start the download task
+@router.post("/download/start")
+async def start_download(all_data: AnnotatedAllForCurrentDataType, destination: str):
+    asyncio.create_task(download_files(all_data, destination))
+    return {
+        "message": "Task started",
+        "total_files": len(all_data)
+    }
+
+# Endpoint to check the status of the task
+@router.get("/download/status")
+async def get_status():
+    return {
+        "status": task_status['status'],
+        "downloaded_files": task_status['downloaded_files'],
+        "total_files": task_status['total_files'],
+        "percentage": task_status['percentage']
+    }
 
 
 @router.get('/images/{file_name}', operation_id="getImage")
