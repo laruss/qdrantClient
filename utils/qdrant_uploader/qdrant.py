@@ -18,6 +18,9 @@ class QdrantService:
             api_key=env.QDRANT_CLOUD_API_KEY,
         )
 
+    def count(self):
+        return self.client.count(collection_name=self.collection)
+
     def create_collection_if_not_exists(self, delete: bool = False):
         if delete:
             self.client.delete_collection(collection_name=self.collection)
