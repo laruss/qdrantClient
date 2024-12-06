@@ -75,7 +75,7 @@ class QdrantService:
             with_payload=True
         )
 
-        results_description = client.search(
+        results_description = self.client.search(
             collection_name=self.collection,
             query_vector=("description_vector", query_vector),
             limit=top_k,

@@ -5,10 +5,9 @@ from utils.qdrant_uploader.types import ImageDataWithVectors
 
 
 
-
 def get_vector(img: str | None, description: str | None) -> dict:
     return session.get(
-        url, params={"url": img, "description": description}
+        url, params={"url": img, "text": description}
     ).json()
 
 # # init data
@@ -31,5 +30,5 @@ def get_vector(img: str | None, description: str | None) -> dict:
 
 
 # search data
-# data = get_vector(None, "white mountains")
-# print(data)
+data = get_vector(None, "white mountains")
+print(data)

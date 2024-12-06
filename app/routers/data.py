@@ -71,7 +71,7 @@ async def upload_image_data(
 
 
 class VectorizedResult(BaseModel):
-    url: str
+    url: str | None
     vector: list[Any]
 
 
