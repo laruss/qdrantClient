@@ -35,6 +35,11 @@ class Env:
     DOP_SPACE_REGION = env_('DOP_SPACE_REGION')
     DOP_PATH = "media/"
 
+    BACKBLAZE_KEY_ID = env_('BACKBLAZE_KEY_ID')
+    BACKBLAZE_APPLICATION_KEY = env_('BACKBLAZE_APPLICATION_KEY')
+    BACKBLAZE_BUCKET_NAME = env_('BACKBLAZE_BUCKET_NAME')
+    BACKBLAZE_ENDPOINT = env_('BACKBLAZE_ENDPOINT')
+
     BASE_DIR, _ = os.path.split(os.path.abspath(__file__))
     TEMP_DIR = BASE_DIR + '/tmp/'
     FACE_IMAGE_PATH = TEMP_DIR + 'face_image.png'

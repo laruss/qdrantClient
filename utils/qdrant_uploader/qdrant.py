@@ -41,10 +41,7 @@ class QdrantService:
             points=[
                 PointStruct(
                     id=uuid.uuid4().hex,
-                    vector={
-                        "image_vector": d.image_vector,
-                        "description_vector": d.description_vector,
-                    },
+                    vector={"image_vector": d.image_vector},
                     payload=dict(
                         image_url=d.image_url,
                         description=d.description,
@@ -52,6 +49,8 @@ class QdrantService:
                 ) for d in data
             ]
         )
+        results_all = self.client.count(collection_name=self.collection)
+        logger.info(f"Uploaded {len(data)} points to collection `{self.collection}`. Total points: {results_all}")
 
     def update_point(self, id: str, data: ImageDataWithVectors):
         point = PointStruct(
@@ -68,28 +67,24 @@ class QdrantService:
         self.client.upsert(collection_name=self.collection, points=[point])
 
     def search(self, query_vector: list[float], top_k: int = 10):
-        results_image = client.search(
+        results_all = self.client.count(collection_name=self.collection)
+        print(results_all)
+
+        results_image = self.client.search(
             collection_name=self.collection,
             query_vector=("image_vector", query_vector),
             limit=top_k,
             with_payload=True
         )
+        print(len(results_image))
 
         results_description = self.client.search(
             collection_name=self.collection,
             query_vector=("description_vector", query_vector),
             limit=top_k,
-            with_payload=True,
-            # Filter out points without description vector
-            query_filter={
-                "must": [
-                    {
-                        "key": "description_vector",
-                        "exists": True
-                    }
-                ]
-            }
+            with_payload=True
         )
+        print(len(results_description))
 
         # United results
         combined_results = results_image + results_description
