@@ -1,11 +1,35 @@
-image_links = ["http://res.cloudinary.com/dtlkjt5wh/image/upload/v1733395740/cld-sample-5.jpg",
-               "http://res.cloudinary.com/dtlkjt5wh/image/upload/v1733395740/cld-sample-4.jpg",
-               "http://res.cloudinary.com/dtlkjt5wh/image/upload/v1733395740/cld-sample-2.jpg",
-               "http://res.cloudinary.com/dtlkjt5wh/image/upload/v1733395740/cld-sample.jpg",
-               "http://res.cloudinary.com/dtlkjt5wh/image/upload/v1733395740/cld-sample-3.jpg",
-               "http://res.cloudinary.com/dtlkjt5wh/image/upload/v1733395740/samples/logo.png",
-               "http://res.cloudinary.com/dtlkjt5wh/image/upload/v1733395739/samples/woman-on-a-football-field.jpg",
-               "http://res.cloudinary.com/dtlkjt5wh/image/upload/v1733395739/samples/dessert-on-a-plate.jpg",
-               "http://res.cloudinary.com/dtlkjt5wh/image/upload/v1733395739/samples/upscale-face-1.jpg",
-               "http://res.cloudinary.com/dtlkjt5wh/image/upload/v1733395739/samples/cup-on-a-table.jpg"
-               ]
+import requests
+
+from utils.qdrant_uploader.qdrant import QdrantService
+from utils.qdrant_uploader.types import ImageDataWithVectors
+
+
+
+
+def get_vector(img: str | None, description: str | None) -> dict:
+    return session.get(
+        url, params={"url": img, "description": description}
+    ).json()
+
+# # init data
+# qdrant.create_collection_if_not_exists()
+#
+# for link in image_links:
+#     # 1. send vectorize request via API
+#     data = get_vector(link, None)
+#     print(data)
+#     image_data = ImageDataWithVectors(
+#         image_url=link,
+#         description=None,
+#         image_vector=data["vector"][0],
+#         description_vector=[],
+#     )
+#     # 2. upload to qdrant
+#     qdrant.upload_points(image_data)
+#
+# print("Done")
+
+
+# search data
+# data = get_vector(None, "white mountains")
+# print(data)

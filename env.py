@@ -5,9 +5,11 @@ import environ
 env_ = environ.Env()
 environ.Env.read_env()
 
-
-with open('anthropic_prompt.txt', 'r') as file:
-    ANTHROPIC_PROMPT = file.read()
+try:
+    with open('anthropic_prompt.txt', 'r') as file:
+        ANTHROPIC_PROMPT = file.read()
+except FileNotFoundError:
+    ANTHROPIC_PROMPT = ""
 
 
 class Env:
@@ -16,6 +18,9 @@ class Env:
     QDRANT_HOST = env_('QDRANT_HOST')
     QDRANT_PORT = env_('QDRANT_PORT')
     QDRANT_COLLECTION = env_('QDRANT_COLLECTION')
+
+    QDRANT_CLOUD_API_KEY = env_('QDRANT_CLOUD_API_KEY')
+    QDRANT_CLOUD_API_URL = env_('QDRANT_CLOUD_API_URL')
 
     MONGODB_USER = env_('MONGODB_USER')
     MONGODB_PASSWORD = env_('MONGODB_PASSWORD')

@@ -45,3 +45,19 @@ def get_image_vector(image_url: str | None, image_path: str | None) -> numpy.nda
         image_features = model.encode_image(image)
     image_features /= image_features.norm(dim=-1, keepdim=True)
     return image_features.cpu().numpy()
+
+
+def get_search_text_vector(search_text: str) -> numpy.ndarray:
+    """
+    Get search text vector
+    Parameters:
+        - search_text: str - search text
+    Returns:
+        - list[float] - search text vector
+    """
+    text = clip.tokenize([search_text]).to(device)
+    with torch.no_grad():
+        text_features = model.encode_text(text)
+    text_features /= text_features.norm(dim=-1, keepdim=True)
+
+    return text_features.cpu().numpy()

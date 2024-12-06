@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from app.annotations import AnnotatedQdrant
 from app.models.image import ImageValidator, ImageModel
 from app.models.image_description import ImageDescription
-from utils.vecotizer.vecorizer import get_image_vector
+from utils.vecotizer.vecorizer import get_image_vector, get_search_text_vector
 
 router = APIRouter(
     prefix="/data",
@@ -76,8 +76,13 @@ class VectorizedResult(BaseModel):
 
 
 @router.get('/vectorize', operation_id="vectorizeImages")
-async def vectorize_images(url: str) -> VectorizedResult:
-    result = get_image_vector(url, None)
+async def vectorize_images(url: str | None = None, text: str | None = None) -> VectorizedResult:
+    if not url and not text:
+        raise ValueError("Either url or text parameter should be provided")
+    if url:
+        result = get_image_vector(url, None)
+    else:
+        result = get_search_text_vector(text)
     # ndarray to list
     result = result.tolist()
 
